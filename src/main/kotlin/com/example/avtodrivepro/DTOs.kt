@@ -80,3 +80,14 @@ data class StudentUpdateRequest(
     val lastName: String?,
     val phoneNumber: String?,
 )
+
+data class ChangePasswordRequest(
+    val currentPassword: String,
+    val newPassword: String,
+)
+
+data class ProfileResponse(
+    val id: Long,
+    val username: String,
+    val role: UserRole,
+)

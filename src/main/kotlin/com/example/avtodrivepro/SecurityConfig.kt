@@ -60,6 +60,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.POST, "/api/admin/add").hasRole("SUPER_ADMIN")
                     .requestMatchers("/api/students/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                     .anyRequest().authenticated()
+                    .requestMatchers("/api/profile/**").authenticated()
             }
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
 

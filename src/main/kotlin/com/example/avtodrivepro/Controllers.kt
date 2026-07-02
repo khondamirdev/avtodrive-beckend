@@ -74,3 +74,15 @@ class StudentController(private val studentService: StudentService) {
         @RequestPart("photo", required = false) photo: MultipartFile?,
     ) = studentService.update(id, body, photo)
 }
+
+@RestController
+@RequestMapping("/api/profile")
+class ProfileController(private val profileService: ProfileService) {
+
+    @GetMapping
+    fun getProfile() = profileService.getProfile()
+
+    @PatchMapping("/password")
+    fun changePassword(@RequestBody body: ChangePasswordRequest) =
+        profileService.changePassword(body)
+}

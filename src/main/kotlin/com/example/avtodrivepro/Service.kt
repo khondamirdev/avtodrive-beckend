@@ -211,3 +211,34 @@ class FileServiceImpl : FileService {
         return "$uploadDir$fileName"
     }
 }
+
+//             Profil service
+
+interface ProfileService {
+    fun getProfile(): ProfileResponse
+    fun changePassword(body: ChangePasswordRequest)
+}
+
+@Service
+class ProfileServiceImpl(
+    private val userRepository: UserRepository,
+    private val passwordEncoder: PasswordEncoder,
+) : ProfileService {
+
+    override fun getProfile(): ProfileResponse {
+        val userId = SecurityContextHolder.getContext().authentication.principal as Long
+        val user = userRepository.findByIdAndDeletedFalse(userId)
+            ?: throw UserNotFoundException()
+        return ProfileResponse(id = user.id!!, username = user.username, role = user.role)
+    }
+
+    override fun changePassword(body: ChangePasswordRequest) {
+        val userId = SecurityContextHolder.getContext().authentication.principal as Long
+        val user = userRepository.findByIdAndDeletedFalse(userId)
+            ?: throw UserNotFoundException()
+        if (!passwordEncoder.matches(body.currentPassword, user.password))
+            throw InvalidCredentialsException()
+        user.password = passwordEncoder.encode(body.newPassword)
+        userRepository.save(user)
+    }
+}
