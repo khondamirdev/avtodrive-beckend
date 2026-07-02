@@ -71,7 +71,6 @@ class StudentEntity(
     @Column(nullable = false)
     var lastName: String,
 
-    @Column(unique = true)
     var phoneNumber: String? = null,
 
     @Column
