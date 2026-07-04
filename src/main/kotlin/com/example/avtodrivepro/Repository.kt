@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.data.jpa.repository.Query
 import org.springframework.data.jpa.repository.support.JpaEntityInformation
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository
 import org.springframework.data.repository.NoRepositoryBean
@@ -24,12 +25,16 @@ interface BaseRepository<T : BaseEntity> : JpaRepository<T, Long>, JpaSpecificat
 }
 
 class BaseRepositoryImpl<T : BaseEntity>(
-    entityInformation: JpaEntityInformation<T, Long>, private val entityManager: EntityManager
+    entityInformation: JpaEntityInformation<T, Long>,
+    private val entityManager: EntityManager
 ) : SimpleJpaRepository<T, Long>(entityInformation, entityManager), BaseRepository<T> {
 
-    val isNotDeletedSpecification = Specification<T> { root, _, cb -> cb.equal(root.get<Boolean>("deleted"), false) }
+    val isNotDeletedSpecification = Specification<T> { root, _, cb ->
+        cb.equal(root.get<Boolean>("deleted"), false)
+    }
 
-    override fun findByIdAndDeletedFalse(id: Long) = findByIdOrNull(id)?.run { if (deleted) null else this }
+    override fun findByIdAndDeletedFalse(id: Long) =
+        findByIdOrNull(id)?.run { if (deleted) null else this }
 
     @Transactional
     override fun trash(id: Long): T? = findByIdOrNull(id)?.takeIf { !it.deleted }?.run {
@@ -56,6 +61,7 @@ class BaseRepositoryImpl<T : BaseEntity>(
 interface UserRepository : BaseRepository<UserEntity> {
     fun findByUsernameAndDeletedFalse(username: String): UserEntity?
     fun existsByUsernameAndDeletedFalse(username: String): Boolean
+    fun findAllByRoleAndDeletedFalse(role: UserRole): List<UserEntity>
 }
 
 // ─────────────────────────────────────────────
@@ -64,12 +70,45 @@ interface UserRepository : BaseRepository<UserEntity> {
 @Repository
 interface StudentRepository : BaseRepository<StudentEntity> {
     fun existsByPhoneNumberAndDeletedFalse(phoneNumber: String): Boolean
+
     fun findAllByStatusAndDeletedFalse(status: StudentStatus, pageable: Pageable): Page<StudentEntity>
+
+    fun findAllByStatusAndCreatedByUserIdAndDeletedFalse(
+        status: StudentStatus,
+        createdByUserId: Long,
+        pageable: Pageable
+    ): Page<StudentEntity>
+
     fun findAllByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndDeletedFalse(
         firstName: String,
         lastName: String,
         pageable: Pageable
     ): Page<StudentEntity>
+
+    fun findAllByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCaseAndCreatedByUserIdAndDeletedFalse(
+        firstName: String,
+        lastName: String,
+        createdByUserId: Long,
+        pageable: Pageable
+    ): Page<StudentEntity>
+
+    fun findAllByCreatedByUserIdAndDeletedFalse(
+        createdByUserId: Long,
+        pageable: Pageable
+    ): Page<StudentEntity>
+
+    fun countByCreatedByUserIdAndDeletedFalse(createdByUserId: Long): Long
+}
+
+// ─────────────────────────────────────────────
+// PAYMENT
+// ─────────────────────────────────────────────
+@Repository
+interface PaymentRepository : BaseRepository<PaymentEntity> {
+    fun findAllByStudentIdAndDeletedFalse(studentId: Long): List<PaymentEntity>
+
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM PaymentEntity p WHERE p.student.id = :studentId AND p.deleted = false")
+    fun sumAmountByStudentId(studentId: Long): Long
 }
 
 // ─────────────────────────────────────────────

@@ -57,10 +57,11 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                     .requestMatchers("/uploads/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
+                    .requestMatchers("/api/profile/**").authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/admin/add").hasRole("SUPER_ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/admin/**").hasRole("SUPER_ADMIN")
                     .requestMatchers("/api/students/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                     .anyRequest().authenticated()
-                    .requestMatchers("/api/profile/**").authenticated()
             }
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
 

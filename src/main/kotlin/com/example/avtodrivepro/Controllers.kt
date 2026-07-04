@@ -1,17 +1,8 @@
 package com.example.avtodrivepro
 
+import com.example.avtodrivepro.service.*
 import org.springframework.http.MediaType
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PatchMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
@@ -26,56 +17,6 @@ class AuthController(private val authService: AuthService) {
 }
 
 @RestController
-@RequestMapping("/api/admin")
-class AdminController(private val adminService: AdminService) {
-
-    @PostMapping("/add")
-    fun addAdmin(@RequestBody body: AdminCreateRequest) = adminService.addAdmin(body)
-}
-
-@RestController
-@RequestMapping("/api/students")
-class StudentController(private val studentService: StudentService) {
-
-    @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun create(
-        @RequestPart("data") body: StudentCreateRequest,
-        @RequestPart("photo", required = false) photo: MultipartFile?,
-    ) = studentService.create(body, photo)
-
-    @GetMapping
-    fun getAll(
-        @RequestParam status: StudentStatus,
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "24") size: Int,
-    ) = studentService.getAll(status, page, size)
-
-    @GetMapping("/search")
-    fun search(
-        @RequestParam(defaultValue = "") firstName: String,
-        @RequestParam(defaultValue = "") lastName: String,
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "24") size: Int,
-    ) = studentService.search(firstName, lastName, page, size)
-
-    @PatchMapping("/{id}/status")
-    fun updateStatus(
-        @PathVariable id: Long,
-        @RequestBody body: StudentStatusUpdateRequest,
-    ) = studentService.updateStatus(id, body)
-
-    @DeleteMapping("/{id}")
-    fun delete(@PathVariable id: Long) = studentService.delete(id)
-
-    @PutMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun update(
-        @PathVariable id: Long,
-        @RequestPart("data") body: StudentUpdateRequest,
-        @RequestPart("photo", required = false) photo: MultipartFile?,
-    ) = studentService.update(id, body, photo)
-}
-
-@RestController
 @RequestMapping("/api/profile")
 class ProfileController(private val profileService: ProfileService) {
 
@@ -85,4 +26,90 @@ class ProfileController(private val profileService: ProfileService) {
     @PatchMapping("/password")
     fun changePassword(@RequestBody body: ChangePasswordRequest) =
         profileService.changePassword(body)
+}
+
+@RestController
+@RequestMapping("/api/admin")
+class AdminController(private val adminService: AdminService) {
+
+    @PostMapping("/add")
+    fun addAdmin(@RequestBody body: AdminCreateRequest) = adminService.addAdmin(body)
+
+    @GetMapping
+    fun getAllAdmins() = adminService.getAllAdmins()
+
+    @GetMapping("/{id}/students")
+    fun getAdminStudents(
+        @PathVariable id: Long,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "24") size: Int,
+    ) = adminService.getAdminStudents(id, page, size)
+}
+
+@RestController
+@RequestMapping("/api/students")
+class StudentController(private val studentService: StudentService) {
+
+    @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun create(
+        @RequestPart("data") body: StudentCreateRequest,
+        @RequestPart("passportPhoto", required = false) passportPhoto: MultipartFile?,
+        @RequestPart("form083", required = false) form083: MultipartFile?,
+    ) = studentService.create(body, passportPhoto, form083)
+
+    @GetMapping
+    fun getAll(
+        @RequestParam status: StudentStatus,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "24") size: Int,
+    ) = studentService.getAll(status, page, size)
+
+    @GetMapping("/{id}")
+    fun getOne(@PathVariable id: Long) = studentService.getOne(id)
+
+    @GetMapping("/search")
+    fun search(
+        @RequestParam(defaultValue = "") firstName: String,
+        @RequestParam(defaultValue = "") lastName: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "24") size: Int,
+    ) = studentService.search(firstName, lastName, page, size)
+
+    @PutMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun update(
+        @PathVariable id: Long,
+        @RequestPart("data") body: StudentUpdateRequest,
+        @RequestPart("passportPhoto", required = false) passportPhoto: MultipartFile?,
+        @RequestPart("form083", required = false) form083: MultipartFile?,
+    ) = studentService.update(id, body, passportPhoto, form083)
+
+    @PatchMapping("/{id}/status")
+    fun updateStatus(
+        @PathVariable id: Long,
+        @RequestBody body: StudentStatusUpdateRequest,
+    ) = studentService.updateStatus(id, body)
+
+    @DeleteMapping("/{id}")
+    fun delete(@PathVariable id: Long) = studentService.delete(id)
+}
+
+@RestController
+@RequestMapping("/api/students/{studentId}/payments")
+class PaymentController(private val paymentService: PaymentService) {
+
+    @PostMapping
+    fun addPayment(
+        @PathVariable studentId: Long,
+        @RequestBody body: PaymentCreateRequest,
+    ) = paymentService.addPayment(studentId, body)
+
+    @GetMapping
+    fun getPayments(@PathVariable studentId: Long) =
+        paymentService.getPayments(studentId)
+
+    @DeleteMapping("/{paymentId}")
+    fun deletePayment(
+        @PathVariable studentId: Long,
+        @PathVariable paymentId: Long,
+    ) = paymentService.deletePayment(paymentId)
 }

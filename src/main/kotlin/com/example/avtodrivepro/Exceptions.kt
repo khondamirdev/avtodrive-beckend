@@ -7,13 +7,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 
 @ControllerAdvice
-class GlobalExceptionHandler(
-    private val messageSource: MessageSource
-) {
+class GlobalExceptionHandler(private val messageSource: MessageSource) {
     @ExceptionHandler(AvtoDriveException::class)
     fun handleAvtoDriveException(exception: AvtoDriveException): ResponseEntity<BaseMessage> {
-        return ResponseEntity.badRequest()
-            .body(exception.getErrorMessage(messageSource))
+        return ResponseEntity.badRequest().body(exception.getErrorMessage(messageSource))
     }
 }
 
@@ -23,11 +20,7 @@ sealed class AvtoDriveException : RuntimeException() {
 
     fun getErrorMessage(messageSource: MessageSource): BaseMessage {
         val message = try {
-            messageSource.getMessage(
-                errorCode().name,
-                getArguments(),
-                LocaleContextHolder.getLocale()
-            )
+            messageSource.getMessage(errorCode().name, getArguments(), LocaleContextHolder.getLocale())
         } catch (e: Exception) {
             e.message ?: errorCode().name
         }
@@ -35,9 +28,6 @@ sealed class AvtoDriveException : RuntimeException() {
     }
 }
 
-// ─────────────────────────────────────────────
-// AUTH
-// ─────────────────────────────────────────────
 class InvalidCredentialsException : AvtoDriveException() {
     override fun errorCode() = ErrorCode.INVALID_CREDENTIALS
 }
@@ -54,9 +44,6 @@ class AccessDeniedException : AvtoDriveException() {
     override fun errorCode() = ErrorCode.ACCESS_DENIED
 }
 
-// ─────────────────────────────────────────────
-// USER / ADMIN
-// ─────────────────────────────────────────────
 class UserNotFoundException : AvtoDriveException() {
     override fun errorCode() = ErrorCode.USER_NOT_FOUND
 }
@@ -65,9 +52,6 @@ class UserAlreadyExistsException : AvtoDriveException() {
     override fun errorCode() = ErrorCode.USER_ALREADY_EXISTS
 }
 
-// ─────────────────────────────────────────────
-// STUDENT
-// ─────────────────────────────────────────────
 class StudentNotFoundException : AvtoDriveException() {
     override fun errorCode() = ErrorCode.STUDENT_NOT_FOUND
 }
@@ -76,9 +60,14 @@ class StudentPhoneAlreadyExistsException : AvtoDriveException() {
     override fun errorCode() = ErrorCode.STUDENT_PHONE_ALREADY_EXISTS
 }
 
-// ─────────────────────────────────────────────
-// FILE
-// ─────────────────────────────────────────────
+class PaymentNotFoundException : AvtoDriveException() {
+    override fun errorCode() = ErrorCode.PAYMENT_NOT_FOUND
+}
+
+class InvalidPaymentAmountException : AvtoDriveException() {
+    override fun errorCode() = ErrorCode.INVALID_PAYMENT_AMOUNT
+}
+
 class FileTooLargeException : AvtoDriveException() {
     override fun errorCode() = ErrorCode.FILE_TOO_LARGE
 }

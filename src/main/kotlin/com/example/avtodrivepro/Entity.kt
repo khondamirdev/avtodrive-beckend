@@ -22,9 +22,6 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.util.Date
 
-// ─────────────────────────────────────────────
-// BASE ENTITY
-// ─────────────────────────────────────────────
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
 abstract class BaseEntity(
@@ -35,13 +32,9 @@ abstract class BaseEntity(
     @Column(nullable = false) @ColumnDefault(value = "false") var deleted: Boolean = false
 )
 
-// ─────────────────────────────────────────────
-// USER — Tizim foydalanuvchisi (Admin / SuperAdmin)
-// ─────────────────────────────────────────────
 @Entity
 @Table(name = "users")
 class UserEntity(
-
     @Column(nullable = false, unique = true)
     var username: String,
 
@@ -55,44 +48,55 @@ class UserEntity(
     @Column(nullable = false)
     @ColumnDefault("true")
     var isActive: Boolean = true,
-
 ) : BaseEntity()
 
-// ─────────────────────────────────────────────
-// STUDENT — O'quvchi
-// ─────────────────────────────────────────────
 @Entity
 @Table(name = "students")
 class StudentEntity(
-
     @Column(nullable = false)
     var firstName: String,
 
     @Column(nullable = false)
     var lastName: String,
 
+    @Column(unique = true)
     var phoneNumber: String? = null,
 
     @Column
-    var photoPath: String? = null,
+    var passportPhotoPath: String? = null,
+
+    @Column
+    var form083Path: String? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: StudentStatus = StudentStatus.REGISTERED,
 
+    @Column(nullable = false)
+    var totalAmount: Long = 0,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     var createdByUser: UserEntity,
-
 ) : BaseEntity()
 
-// ─────────────────────────────────────────────
-// JWT TOKEN — Token boshqaruvi
-// ─────────────────────────────────────────────
+@Entity
+@Table(name = "payments")
+class PaymentEntity(
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
+    var student: StudentEntity,
+
+    @Column(nullable = false)
+    var amount: Long,
+
+    @Column
+    var note: String? = null,
+) : BaseEntity()
+
 @Entity
 @Table(name = "jwt_tokens")
 class JwtTokenEntity(
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     var user: UserEntity,
@@ -107,5 +111,4 @@ class JwtTokenEntity(
     @Column(nullable = false)
     @ColumnDefault("false")
     var revoked: Boolean = false,
-
 ) : BaseEntity()
