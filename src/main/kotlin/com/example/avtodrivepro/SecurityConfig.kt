@@ -73,7 +73,8 @@ class SecurityConfig(
         val config = CorsConfiguration()
         config.allowedOrigins = listOf(
             "https://avtodrivepro.uz",
-            "https://avtodrive-frontend.onrender.com" // frontend hali rendarda tursa
+            "https://avtodrive-frontend.onrender.com",
+            "https://autodrivepro.netlify.app"
         )
         config.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
