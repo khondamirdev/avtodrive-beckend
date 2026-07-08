@@ -71,7 +71,10 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
-        config.allowedOrigins = listOf("https://avtodrive-frontend.onrender.com")
+        config.allowedOrigins = listOf(
+            "https://avtodrivepro.uz",
+            "https://avtodrive-frontend.onrender.com" // frontend hali rendarda tursa
+        )
         config.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
         config.allowCredentials = true
